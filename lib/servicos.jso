@@ -1,0 +1,66 @@
+obterAudioEditado: (mp3_path, tipo_edicao) =>{
+        return new Promise((resolve,reject)=>{
+            let timestamp = Math.round(new Date().getTime()/1000)
+            let nome_arquivo = ``
+            let ffmpeg_opcoes = []
+            switch(tipo_edicao){
+                case "estourar": case 'estourado':
+                    nome_arquivo = `audioestourado-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter_complex", "acrusher=level_in=3:level_out=5:bits=10:mode=log:aa=1"] 
+                    break
+                case "reverso": case 'reverte': case 'reverse':
+                    nome_arquivo = `audioreverso-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter_complex", "areverse"]
+                    break
+                case "grave":
+                    nome_arquivo = `audiograve-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter:a", "asetrate=44100*0.5"]
+                    break
+                case "agudo":
+                    nome_arquivo = `audioagudo-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-af", "asetrate=44100*1.4"]
+                    break
+                case "x2": case '2x':
+                    nome_arquivo = `audiorapido-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter:a", "atempo=2.0", "-vn"]
+                    break
+                case "volume":
+                    nome_arquivo = `audiovolumebaixo-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter:a", "volume=0.9"]
+                    break
+                case "volume":
+                    nome_arquivo = `audiovolume-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter:a", "volume=5.0"]
+                    break
+                case "volume50":
+                    nome_arquivo = `audiovolume50-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter:a", "volume=50.0"]
+                    break
+                case "volume100":
+                    nome_arquivo = `audiovolume100-${timestamp}.mp3`
+                    ffmpeg_opcoes = ["-y", "-filter:a", "volume=100.0"]
+                    break
+                default:
+                    reject(new Error(erroComandoMsg(".audio")))
+            }
+           
+            ffmpeg(mp3_path)
+            .outputOptions(ffmpeg_opcoes)
+            .save(`./media/audios/editados/${nome_arquivo}`)
+            .on('end', async () => {
+                resolve(path.resolve(`media/audios/editados/${nome_arquivo}`))
+            })
+            .on("error", ()=>{
+                reject(msgs_texto.utilidades.audio.erro_conversao)
+            });
+
+        }).catch(err =>{
+            if(err.message != erroComandoMsg(".audio")){
+                consoleErro(err.message,"ERRO NA CONVERSÃO")
+                throw new Error(msgs_texto.utilidades.audio.erro_conversao)
+            } else {
+                throw err
+            }
+        })
+        
+    },
